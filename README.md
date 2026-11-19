@@ -18,7 +18,7 @@ Vì ứng dụng nghe qua micro nên dùng được với mọi cuộc họp ho�
 
 1. Vào trang [Releases](https://github.com/ThuyNhanVP/DirectNotes/releases/latest) và tải `directnotes.zip`.
 2. Giải nén, giữ 2 file chung một thư mục.
-3. Bấm đúp `Mo-DirectNotes.bat`. Ứng dụng mở trong cửa sổ nhỏ bằng Chrome hoặc Edge.
+3. Bấm đúp `Open-DirectNotes.bat`. Ứng dụng mở trong cửa sổ nhỏ bằng Chrome hoặc Edge.
 4. Bấm **Bắt đầu ghi** và cho phép micro khi trình duyệt hỏi.
 5. Bấm **Cửa sổ nổi** để đặt ghi chú cạnh phòng họp.
 
@@ -51,5 +51,5 @@ Không dùng được file `.bat`? Mở thẳng `directnotes.html` bằng Chrome
 
 ```
 directnotes.html         Ứng dụng (một file, không cần cài thêm gì)
-Mo-DirectNotes.bat        Mở ứng dụng trong cửa sổ nhỏ bằng Chrome hoặc Edge
+Open-DirectNotes.bat        Mở ứng dụng trong cửa sổ nhỏ bằng Chrome hoặc Edge
 ```
