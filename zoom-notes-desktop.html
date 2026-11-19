@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ghi chú Zoom</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: một cột hẹp, chạy tốt ở cửa sổ nhỏ 400px cạnh phòng họp */
+:root {
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --fg: #13202b;
+  --muted: #5b6a77;
+  --line: #d8dfe5;
+  --accent: #0a58d6;
+  --accent-fg: #ffffff;
+  --rec: #cf2630;
+  --rec-soft: #fde9ea;
+  --font-body: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-head: "Space Grotesk", Inter, system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1318; --surface: #151d25; --fg: #e6ecf1; --muted: #92a1ae; --line: #26313b;
+    --accent: #6ba4ff; --accent-fg: #0a1220; --rec: #ff6b72; --rec-soft: #3a1c20;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1318; --surface: #151d25; --fg: #e6ecf1; --muted: #92a1ae; --line: #26313b;
+  --accent: #6ba4ff; --accent-fg: #0a1220; --rec: #ff6b72; --rec-soft: #3a1c20;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 15px/1.55 var(--font-body);
+  padding-block: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 14px; }
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+h1 { font: 700 24px/1.2 var(--font-head); margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 4px 0 0; font-size: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+label.t { display: block; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+input[type=text], select {
+  width: 100%; font: inherit; color: var(--fg); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 12px; }
+.btn {
+  font: 600 15px var(--font-body); border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+  border-radius: 8px; padding: 9px 14px; cursor: pointer;
+}
+.btn:hover { border-color: var(--muted); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.rec { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); min-width: 150px; }
+.btn.rec.on { background: var(--rec); border-color: var(--rec); color: #fff; }
+.status { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 500; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.status.on .dot { background: var(--rec); animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 6px var(--rec-soft); } }
+@media (prefers-reduced-motion: reduce) { .status.on .dot { animation: none; } }
+.clock { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 20px; font-family: var(--font-head); margin-left: auto; }
+.lang { flex: 0 0 160px; }
+.lang select { padding: 7px 9px; }
+#msg { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
+#msg:empty { display: none; }
+.tip { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+.log { padding: 0; overflow: hidden; }
+.log ol { list-style: none; margin: 0; padding: 0; max-height: 52vh; overflow-y: auto; }
+.log li { display: grid; grid-template-columns: 4.6rem minmax(0, 1fr) auto; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); align-items: start; }
+.ts { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 600; font-size: 13px; padding-top: 2px; }
+.tx { margin: 0; overflow-wrap: anywhere; border-radius: 4px; }
+.del { border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+.del:hover { color: var(--rec); }
+.empty { padding: 24px 18px; color: var(--muted); text-align: center; margin: 0; }
+.empty[hidden], [hidden] { display: none !important; }
+#partial { padding: 10px 14px 10px calc(14px + 4.6rem + 10px); color: var(--muted); font-style: italic; }
+#partial:empty { display: none; }
+.add { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--line); }
+.add input { flex: 1; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+.row .danger { margin-left: auto; }
+.danger.arm { background: var(--rec); border-color: var(--rec); color: #fff; }
+.pipnote { max-width: 760px; margin: 0 auto; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<p class="pipnote" id="pipnote" hidden>Ghi chú đang hiển thị ở cửa sổ nổi. Đóng cửa sổ nổi để đưa về đây. Mic vẫn chạy khi bạn chuyển sang Zoom.</p>
+
+<div class="wrap">
+  <header class="head">
+    <div>
+      <h1>Ghi chú Zoom</h1>
+      <p class="sub">Lời thoại thành ghi chú kèm mốc thời gian.</p>
+    </div>
+    <button type="button" class="btn" id="pip" hidden>Cửa sổ nổi</button>
+  </header>
+
+  <section class="card" aria-label="Điều khiển">
+    <label class="t" for="title">Tên cuộc họp</label>
+    <input type="text" id="title" placeholder="Ví dụ: Họp tiến độ dự án tuần 47" autocomplete="off">
+    <div class="ctl">
+      <button type="button" class="btn rec" id="rec">Bắt đầu ghi</button>
+      <span class="status" id="status"><span class="dot"></span><span id="stext">Đang tắt</span></span>
+      <div class="lang">
+        <select id="lang" aria-label="Ngôn ngữ nhận giọng nói">
+          <option value="vi-VN">Tiếng Việt</option>
+          <option value="en-US">English</option>
+          <option value="">Theo trình duyệt</option>
+        </select>
+      </div>
+      <span class="clock" id="clock" aria-label="Thời gian cuộc họp">00:00:00</span>
+    </div>
+    <p id="msg" role="status" aria-live="polite"></p>
+    <p class="tip">Trang chỉ nghe qua micro. Muốn thu tiếng người khác trong Zoom, hãy bật loa ngoài; dùng tai nghe thì chỉ thu được giọng bạn. Cần có mạng.</p>
+  </section>
+
+  <section class="card log" aria-label="Bản ghi">
+    <p class="empty" id="empty">Chưa có nội dung. Bấm "Bắt đầu ghi" rồi nói, mỗi đoạn sẽ hiện ở đây kèm giờ trong cuộc họp. Bạn có thể sửa hoặc xóa từng đoạn.</p>
+    <ol id="list"></ol>
+    <div id="partial" aria-hidden="true"></div>
+    <form class="add" id="addform">
+      <input type="text" id="manual" placeholder="Gõ thêm ghi chú, ví dụ: Việc cần làm: gửi báo giá" autocomplete="off" aria-label="Ghi chú gõ tay">
+      <button type="submit" class="btn">Thêm</button>
+    </form>
+  </section>
+
+  <div class="row">
+    <button type="button" class="btn" id="copy">Sao chép</button>
+    <button type="button" class="btn" id="dlmd">Tải .md</button>
+    <button type="button" class="btn" id="dltxt">Tải .txt</button>
+    <button type="button" class="btn danger" id="clear">Cuộc họp mới</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Phần tử được chuyển sang cửa sổ nổi nên tra một lần rồi giữ tham chiếu.
+  var cache = {};
+  var $ = function (s) { return cache[s] || (cache[s] = document.querySelector(s)); };
+  ["#msg", "#rec", "#status", "#stext", "#clock", "#partial", "#empty", "#list", "#title", "#lang",
+    "#addform", "#manual", "#copy", "#dlmd", "#dltxt", "#clear", "#pip", "#pipnote"].forEach($);
+
+  var KEY = "zoomnotes-desktop-v1";
+  var S = { title: "", lang: "vi-VN", startedAt: 0, entries: [] };
+  try { var raw = localStorage.getItem(KEY); if (raw) S = Object.assign(S, JSON.parse(raw)); } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  var list = $("#list"), msg = $("#msg"), wrapEl = document.querySelector(".wrap");
+  var pipWin = null, timer = 0;
+  function win() { return pipWin || window; }
+  function say(t) { msg.textContent = t || ""; }
+  function p2(n) { return String(n).padStart(2, "0"); }
+  function fmt(ms) {
+    var s = Math.max(0, Math.floor(ms / 1000));
+    return p2(Math.floor(s / 3600)) + ":" + p2(Math.floor(s / 60) % 60) + ":" + p2(s % 60);
+  }
+  function showEmpty() { $("#empty").hidden = S.entries.length > 0; }
+  function tick() { $("#clock").textContent = S.startedAt ? fmt(Date.now() - S.startedAt) : "00:00:00"; }
+
+  function row(e) {
+    var li = document.createElement("li"); li.dataset.id = e.id;
+    var t = document.createElement("span"); t.className = "ts"; t.textContent = fmt(e.t - S.startedAt);
+    var p = document.createElement("p"); p.className = "tx"; p.contentEditable = "true"; p.textContent = e.text;
+    p.setAttribute("aria-label", "Nội dung đoạn ghi, có thể sửa");
+    p.addEventListener("input", function () { e.text = p.textContent; save(); });
+    p.addEventListener("paste", function (ev) {
+      ev.preventDefault();
+      p.ownerDocument.execCommand("insertText", false, ev.clipboardData.getData("text/plain"));
+    });
+    var b = document.createElement("button"); b.type = "button"; b.className = "del"; b.textContent = "×";
+    b.setAttribute("aria-label", "Xóa đoạn này");
+    b.addEventListener("click", function () {
+      S.entries = S.entries.filter(function (x) { return x !== e; });
+      li.remove(); save(); showEmpty();
+    });
+    li.append(t, p, b);
+    return li;
+  }
+  function renderAll() {
+    list.textContent = "";
+    S.entries.forEach(function (e) { list.appendChild(row(e)); });
+    showEmpty(); tick();
+  }
+
+  function addText(text, manual) {
+    text = (text || "").trim();
+    if (!text) return;
+    var now = Date.now();
+    if (!S.startedAt) S.startedAt = now;
+    var last = S.entries[S.entries.length - 1];
+    if (!manual && last && !last.manual && now - last.t2 < 6000) {
+      last.text = (last.text + " " + text).trim(); last.t2 = now;
+      var node = list.querySelector('[data-id="' + last.id + '"] .tx');
+      if (node) node.textContent = last.text;
+    } else {
+      var e = { id: now + Math.floor(Math.random() * 1000), t: now, t2: now, text: text, manual: !!manual };
+      S.entries.push(e); list.appendChild(row(e));
+    }
+    save(); showEmpty();
+    if (want && list.lastElementChild) list.lastElementChild.scrollIntoView({ block: "nearest" });
+  }
+
+  function build(kind) {
+    var name = S.title.trim() || "Ghi chú cuộc họp";
+    var head = kind === "md" ? "# " + name + "\n\n" : name + "\n\n";
+    head += "Bắt đầu: " + new Date(S.startedAt || Date.now()).toLocaleString("vi-VN") + "\n\n";
+    return head + S.entries.map(function (e) {
+      var ts = "[" + fmt(e.t - S.startedAt) + "]";
+      return (kind === "md" ? "**" + ts + "** " : ts + " ") + e.text;
+    }).join(kind === "md" ? "\n\n" : "\n") + "\n";
+  }
+  function fileName(ext) {
+    var slug = S.title.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "ghi-chu-zoom";
+    return slug + "-" + new Date().toLocaleDateString("sv-SE") + "." + ext;
+  }
+  function download(kind) {
+    if (!S.entries.length) { say("Chưa có nội dung để tải."); return; }
+    var d = win().document, a = d.createElement("a");
+    a.href = URL.createObjectURL(new Blob([build(kind)], { type: "text/plain;charset=utf-8" }));
+    a.download = fileName(kind); d.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 10000);
+    say("Đã tải " + a.download);
+  }
+
+  $("#title").value = S.title;
+  $("#lang").value = S.lang;
+  $("#title").addEventListener("input", function (ev) { S.title = ev.target.value; save(); });
+  $("#lang").addEventListener("change", function (ev) {
+    S.lang = ev.target.value; save();
+    if (want && rec) rec.stop(); // onend nối lại với ngôn ngữ mới
+  });
+  $("#addform").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var i = $("#manual"); addText(i.value, true); i.value = "";
+  });
+  $("#copy").addEventListener("click", function () {
+    if (!S.entries.length) { say("Chưa có nội dung để sao chép."); return; }
+    win().navigator.clipboard.writeText(build("txt")).then(function () { say("Đã sao chép ghi chú."); })
+      .catch(function () { say("Trình duyệt chặn sao chép, hãy dùng nút Tải file."); });
+  });
+  $("#dlmd").addEventListener("click", function () { download("md"); });
+  $("#dltxt").addEventListener("click", function () { download("txt"); });
+
+  var armTimer = 0, clr = $("#clear");
+  clr.addEventListener("click", function () {
+    if (!clr.classList.contains("arm")) {
+      clr.classList.add("arm"); clr.textContent = "Bấm lần nữa để xóa hết";
+      armTimer = setTimeout(disarm, 4000); return;
+    }
+    disarm();
+    if (want) stopRec();
+    S = { title: "", lang: S.lang, startedAt: 0, entries: [] };
+    $("#title").value = ""; save(); renderAll(); say("Đã bắt đầu cuộc họp mới.");
+  });
+  function disarm() { clearTimeout(armTimer); clr.classList.remove("arm"); clr.textContent = "Cuộc họp mới"; }
+
+  // ---- Nhận giọng nói: tự nối lại mỗi khi Chrome/Edge ngắt phiên (im lặng, đổi cửa sổ, lỗi mạng) ----
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var rec = null, want = false, netErr = false, lockHeld = false;
+
+  function paint(on) {
+    var b = $("#rec");
+    b.textContent = on ? "Dừng ghi" : "Bắt đầu ghi";
+    b.classList.toggle("on", on);
+    $("#status").classList.toggle("on", on);
+    $("#stext").textContent = on ? "Đang nghe" : "Đang tắt";
+    clearInterval(timer);
+    if (on) timer = setInterval(tick, 1000);
+    tick();
+  }
+
+  function startRec() {
+    rec = new SR();
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.lang = S.lang || navigator.language || "vi-VN";
+    rec.onstart = function () {
+      if (netErr) { netErr = false; say(""); }
+      paint(true);
+    };
+    rec.onresult = function (ev) {
+      var interim = "";
+      for (var i = ev.resultIndex; i < ev.results.length; i++) {
+        var r = ev.results[i];
+        if (r.isFinal) addText(r[0].transcript, false); else interim += r[0].transcript;
+      }
+      $("#partial").textContent = interim;
+    };
+    rec.onerror = function (ev) {
+      if (ev.error === "not-allowed" || ev.error === "service-not-allowed") {
+        want = false; say("Mic bị từ chối. Bấm biểu tượng khóa cạnh thanh địa chỉ để cho phép micro, rồi bấm Bắt đầu ghi.");
+      } else if (ev.error === "audio-capture") {
+        want = false; say("Không tìm thấy micro. Kiểm tra thiết bị thu âm rồi bấm Bắt đầu ghi.");
+      } else if (ev.error === "language-not-supported") {
+        want = false; say("Ngôn ngữ này chưa được hỗ trợ. Chọn ngôn ngữ khác.");
+      } else if (ev.error === "network") {
+        netErr = true; say("Mất kết nối mạng, đang thử lại…");
+      }
+    };
+    rec.onend = function () {
+      $("#partial").textContent = "";
+      if (want) setTimeout(function () { if (want) startRec(); }, netErr ? 2000 : 250);
+      else paint(false);
+    };
+    try { rec.start(); } catch (e) { want = false; paint(false); say("Không bật được mic, bấm lại để thử."); }
+  }
+  function stopRec() { want = false; if (rec) rec.stop(); }
+
+  $("#rec").addEventListener("click", function () {
+    if (!SR) return;
+    if (want) { stopRec(); return; }
+    say("");
+    if (!S.startedAt) S.startedAt = Date.now();
+    // Giữ một Web Lock để trình duyệt không đóng băng trang khi ở nền.
+    if (!lockHeld && navigator.locks) {
+      lockHeld = true;
+      navigator.locks.request("zoom-notes-keepalive", function () { return new Promise(function () {}); });
+    }
+    want = true; startRec();
+  });
+  if (!SR) {
+    $("#rec").disabled = true;
+    say("Trình duyệt này không hỗ trợ nhận giọng nói. Hãy mở bằng Chrome hoặc Edge. Bạn vẫn có thể gõ ghi chú.");
+  }
+
+  // ---- Cửa sổ nổi luôn nằm trên Zoom (Chrome/Edge 116 trở lên) ----
+  if (window.documentPictureInPicture) $("#pip").hidden = false;
+  $("#pip").addEventListener("click", function () {
+    if (pipWin) { pipWin.close(); return; }
+    window.documentPictureInPicture.requestWindow({ width: 400, height: 580 }).then(function (w) {
+      pipWin = w;
+      document.querySelectorAll("style, link[rel=stylesheet]").forEach(function (n) {
+        w.document.head.appendChild(n.cloneNode(true));
+      });
+      w.document.body.appendChild(wrapEl);
+      $("#pipnote").hidden = false; $("#pip").textContent = "Thu về";
+      w.addEventListener("pagehide", function () {
+        document.body.appendChild(wrapEl);
+        $("#pipnote").hidden = true; $("#pip").textContent = "Cửa sổ nổi"; pipWin = null;
+      });
+    }).catch(function () { say("Không mở được cửa sổ nổi. Bạn vẫn có thể thu nhỏ cửa sổ này đặt cạnh Zoom."); });
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
