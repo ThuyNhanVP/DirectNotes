@@ -351,6 +351,13 @@ input[type=text], select {
     }).catch(function () { say("Không mở được cửa sổ nổi. Bạn vẫn có thể thu nhỏ cửa sổ này đặt cạnh ứng dụng khác."); });
   });
 
+  // Mở qua http://localhost thì Chrome nhớ quyền mic; mở thẳng file thì hỏi lại mỗi lần mic nối lại.
+  if (location.protocol === "file:") {
+    say("Bạn đang mở trực tiếp file nên Chrome sẽ hỏi lại quyền mic. Hãy mở bằng Open-DirectNotes.bat.");
+  } else {
+    setInterval(function () { fetch("/ping", { cache: "no-store" }).catch(function () {}); }, 5000);
+  }
+
   renderAll();
 })();
 </script>

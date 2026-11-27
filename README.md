@@ -18,11 +18,11 @@ Vì ứng dụng nghe qua micro nên dùng được với mọi cuộc họp ho�
 
 1. Vào trang [Releases](https://github.com/ThuyNhanVP/DirectNotes/releases/latest) và tải `directnotes.zip`.
 2. Giải nén, giữ 2 file chung một thư mục.
-3. Bấm đúp `Open-DirectNotes.bat`. Ứng dụng mở trong cửa sổ nhỏ bằng Chrome hoặc Edge.
+3. Bấm đúp `Open-DirectNotes.bat`. Ứng dụng mở trong cửa sổ nhỏ bằng Chrome hoặc Edge, chạy qua máy chủ cục bộ `http://localhost:47831` (chỉ trên máy bạn, tự tắt khi đóng cửa sổ) để trình duyệt nhớ quyền mic.
 4. Bấm **Bắt đầu ghi** và cho phép micro khi trình duyệt hỏi.
 5. Bấm **Cửa sổ nổi** để đặt ghi chú cạnh phòng họp.
 
-Không dùng được file `.bat`? Mở thẳng `directnotes.html` bằng Chrome hoặc Edge, mọi tính năng vẫn chạy (chỉ không tự mở cửa sổ nhỏ).
+Không dùng được file `.bat`? Mở thẳng `directnotes.html` bằng Chrome hoặc Edge vẫn chạy, nhưng trình duyệt sẽ hỏi lại quyền mic mỗi khi phiên nghe được nối lại sau lúc im lặng.
 
 ## Yêu cầu
 
@@ -42,6 +42,7 @@ Không dùng được file `.bat`? Mở thẳng `directnotes.html` bằng Chrome
 
 | Tình huống | Cách xử lý |
 | --- | --- |
+| Mic cứ hỏi quyền lại sau lúc im lặng | Mở bằng `Open-DirectNotes.bat` thay vì mở thẳng file `.html` |
 | Mic bị từ chối | Bấm biểu tượng khóa cạnh thanh địa chỉ, cho phép micro, rồi bấm lại **Bắt đầu ghi** |
 | Không thấy nút **Cửa sổ nổi** | Cập nhật Chrome hoặc Edge lên bản 116 trở lên |
 | Báo mất kết nối mạng | Kiểm tra mạng, ứng dụng sẽ tự thử lại |
@@ -51,5 +52,6 @@ Không dùng được file `.bat`? Mở thẳng `directnotes.html` bằng Chrome
 
 ```
 directnotes.html         Ứng dụng (một file, không cần cài thêm gì)
-Open-DirectNotes.bat        Mở ứng dụng trong cửa sổ nhỏ bằng Chrome hoặc Edge
+Open-DirectNotes.bat      Mở ứng dụng trong cửa sổ nhỏ bằng Chrome hoặc Edge
+Serve-DirectNotes.ps1     Máy chủ cục bộ nhỏ (localhost) do file .bat tự gọi
 ```
